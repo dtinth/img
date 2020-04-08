@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=UA-59441941-12"
+    ></script>
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        dataLayer.push(arguments)
+      }
+      gtag('js', new Date())
+
+      gtag('config', 'UA-59441941-12')
+    </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>img.spacet.me</title>
+
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icon-16.png" />
+
+    <meta
+      name="twitter:image:src"
+      content="https://repository-images.githubusercontent.com/254100096/702f3a80-79e0-11ea-964a-25fa587700f9"
+    />
+    <meta name="twitter:site" content="@dtinth" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="img.spacet.me" />
+    <meta
+      name="twitter:description"
+      content="Private image hosting service powered by Google Drive. Upload image to Google Drive and get a direct link instantly."
+    />
+    <meta
+      property="og:image"
+      content="https://repository-images.githubusercontent.com/254100096/702f3a80-79e0-11ea-964a-25fa587700f9"
+    />
+    <meta property="og:site_name" content="@dtinth" />
+    <meta property="og:type" content="object" />
+    <meta property="og:title" content="img.spacet.me" />
+    <meta property="og:url" content="https://img.spacet.me/" />
+    <meta
+      property="og:description"
+      content="Private image hosting service powered by Google Drive. Upload image to Google Drive and get a direct link instantly."
+    />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/tailwindtinth@2.0.0/dist/tailwindtinth.min.css"
+    />
+  </head>
+  <body class="bg-#353433 text-#e9e8e7 p-6">
+    <div id="app">
+      <h1 class="text-#8b8685">
+        <string class="text-2xl">img.spacet.me</string> —
+        <em>A personal image hosting service, powered by Google Drive.</em>
+      </h1>
+
+      <p class="my-4 max-w-xl">
+        When you upload images here, they’ll be saved to your Google Drive with
+        the “Anyone with the link can view” permission, and afterwards a direct
+        link will be generated for you. Useful when you want to upload an image,
+        but don’t want to put it on some random hosting site.
+      </p>
+
+      <p class="my-4 max-w-xl">
+        <button
+          class="border border-#656463 bg-transparent text-#8b8685 py-2 px-4 rounded font-bold"
+          v-if="$google.signedIn === null"
+          disabled
+        >
+          Please wait…
+        </button>
+        <button
+          class="border border-blue-600 bg-blue-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded"
+          @click="$google.authorize"
+          v-if="$google.signedIn === false"
+        >
+          Sign in with Google
+        </button>
+        <button
+          class="border border-#d7fc70 bg-#d7fc70 text-#090807 font-bold py-2 px-4 rounded"
+          @click="upload"
+          v-if="$google.signedIn === true"
+        >
+          Upload image
+        </button>
+        <button
+          class="border border-#e9e8e7 bg-transparent text-#e9e8e7 py-2 px-4 rounded"
+          @click="$google.signout"
+          v-if="$google.signedIn === true"
+        >
+          Sign out
+        </button>
+        <span class="ml-4">{{ $global.status }}</span>
+      </p>
+
+      <div v-for="item of output" :key="item.key" class="mt-2">
+        <h2 class="text-#8b8685">{{item.name}}</h2>
+        <span :class="[{ 'opacity-50': item.status !== 'ok' }]">
+          <copy-item :value="url(item)"></copy-item>
+        </span>
+      </div>
+      <div
+        class="text-xl text-#8b8685 ml-4"
+        v-if="!output.length"
+        :class="[{invisible:$google.signedIn !== true}]"
+      >
+        &uarr; click the above button to get started
+      </div>
+
+      <pre hidden>{{output}}</pre>
+
+      <h2 class="mt-12 mb-4 text-#d7fc70 font-bold text-xl">Options</h2>
+      <p>Output format</p>
+      <div
+        class="mt-2 flex items-baseline"
+        v-for="(format, formatId) of formats"
+        :key="formatId"
+      >
+        <label class="inline-flex items-baseline w-32">
+          <input
+            type="radio"
+            class="form-radio self-center"
+            :value="formatId"
+            v-model="selectedFormat"
+          />
+          <span class="ml-2">{{format.name}}</span>
+        </label>
+        <span>
+          <input
+            :readonly="formatId !== 'custom'"
+            class="form-input bg-#090807 border-#454443 focus:border-#656463 text-#bbeeff max-w-full"
+            :class="[{'opacity-50': formatId !== 'custom'}]"
+            size="60"
+            v-model="format.format"
+          /><br />
+          <span class="block text-#8b8685 text-sm px-3 italic"
+            >{{format.description}}</span
+          >
+        </span>
+      </div>
+
+      <div class="mt-12 text-#8b8685 flex-none">
+        <p class="mt-8">
+          Source code available at
+          <a
+            href="https://github.com/dtinth/img"
+            target="_blank"
+            class="underline"
+            >github.com/dtinth/img</a
+          >.<br />
+          You can
+          <a href="https://dt.in.th/go/coffee" target="_blank" class="underline"
+            >buy me a coffee</a
+          >, if you feel like doing it ;).
+        </p>
+      </div>
+    </div>
+    <script src="https://unpkg.com/vue@2.6.11/dist/vue.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <script>
+      {
+        // This allows Prettier to format the template using template: html`...`
+        const html = String.raw
+        let nextId = 1
+
+        window.main = () => {
+          return new Vue({
+            el: '#app',
+            data: {
+              selectedFormat:
+                localStorage['img.spacet.me_selectedFormat'] || 'markdown',
+              formats: {
+                url: {
+                  name: 'Direct URL',
+                  format: 'https://drive.google.com/uc?export=view&id=$id',
+                  description: 'Direct URL to the uploaded file.',
+                },
+                driveUrl: {
+                  name: 'Drive URL',
+                  format: 'https://drive.google.com/file/d/$id/view',
+                  description: 'Web page URL to the file in Google Drive.',
+                },
+                markdown: {
+                  name: 'Markdown',
+                  format:
+                    '![$name](https://drive.google.com/uc?export=view&id=$id)',
+                  description: 'Markdown code to embed the image.',
+                },
+                rich: {
+                  name: 'Rich Text',
+                  format:
+                    'clipboard:text/html,<img alt="$name" src="https://drive.google.com/uc?export=view&id=$id" />',
+                  description:
+                    'This lets you paste the image directly into rich text fields.',
+                },
+                custom: {
+                  name: 'Custom',
+                  format:
+                    localStorage['img.spacet.me_customFormat'] ||
+                    '<img alt="$name" src="https://drive.google.com/uc?export=view&id=$id" />',
+                  description:
+                    'Available placeholders: $name for filename, $id for file ID.',
+                },
+              },
+              output: new URLSearchParams(location.search).get('dev')
+                ? [
+                    {
+                      key: '1586343164047:1',
+                      name: '20200408T080128555Z.png',
+                      id: '1665q3cryluu7JrusTUcElv5bYFjAAV1_',
+                      status: 'setting',
+                    },
+                    {
+                      key: '1586343164047:2',
+                      name: '20200408T080128555Z.png',
+                      id: '1665q3cryluu7JrusTUcElv5bYFjAAV1_',
+                      status: 'ok',
+                    },
+                  ]
+                : [],
+            },
+            watch: {
+              'formats.custom.format'(x) {
+                localStorage['img.spacet.me_customFormat'] = x
+              },
+              selectedFormat(x) {
+                localStorage['img.spacet.me_selectedFormat'] = x
+              },
+            },
+            methods: {
+              url(item) {
+                return (
+                  (this.formats[this.selectedFormat] || {}).format || '$id'
+                )
+                  .replace(/\$id/g, item.id)
+                  .replace(/\$name/g, item.name)
+              },
+              upload() {
+                onPicked = async (event) => {
+                  if (event.action === 'picked') {
+                    await Promise.all(
+                      event.docs.map(async (doc) => {
+                        const item = {
+                          key: [Date.now(), ++nextId].join(':'),
+                          name: doc.name,
+                          id: doc.id,
+                          status: 'setting',
+                        }
+                        this.output.unshift(item)
+                        await gapi.client.drive.permissions.create({
+                          fileId: doc.id,
+                          resource: {
+                            role: 'reader',
+                            type: 'anyone',
+                            allowFileDiscovery: false,
+                          },
+                        })
+                        item.status = 'ok'
+                      }),
+                    )
+                  }
+                }
+                const uploader = new google.picker.DocsUploadView()
+                uploader.setIncludeFolders(true)
+                const picker = new google.picker.PickerBuilder()
+                  .setAppId('667836241363')
+                  .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+                  .enableFeature(google.picker.Feature.MINE_ONLY)
+                  .setOAuthToken(
+                    gapi.auth2
+                      .getAuthInstance()
+                      .currentUser.get()
+                      .getAuthResponse().access_token,
+                  )
+                  .addView(uploader)
+                  .addView(new google.picker.View(google.picker.ViewId.DOCS))
+                  .setDeveloperKey('AIzaSyD0ndDKrZHLZxe5M9zFVcQCXhtGOFyDisI')
+                  .setCallback(onPicked)
+                  .build()
+                picker.setVisible(true)
+              },
+            },
+          })
+        }
+
+        const $global = (Vue.prototype.$global = new Vue({
+          data: {
+            status: 'Initializing...',
+          },
+        }))
+
+        const gapiPromise = new Promise(
+          (resolve) => (window.gapiAvailable = resolve),
+        )
+
+        const $google = (Vue.prototype.$google = new Vue({
+          data: {
+            signedIn: null,
+          },
+          async created() {
+            try {
+              $global.status = 'Loading Google APIs...'
+              await gapiPromise
+              $global.status = 'Loading more Google APIs...'
+              await new Promise((resolve) =>
+                gapi.load('client:auth2:picker', resolve),
+              )
+              $global.status = 'Authenticating with Google...'
+              await gapi.client.init({
+                apiKey: 'AIzaSyD0ndDKrZHLZxe5M9zFVcQCXhtGOFyDisI',
+                clientId:
+                  '667836241363-aoniqrkqbgs5fijegf1hofipor7410qd.apps.googleusercontent.com',
+                discoveryDocs: [
+                  'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+                ],
+                scope: 'https://www.googleapis.com/auth/drive.file',
+              })
+              $global.status = ''
+              gapi.auth2.getAuthInstance().isSignedIn.listen((isSignedIn) => {
+                this.signedIn = isSignedIn
+              })
+              this.signedIn = gapi.auth2.getAuthInstance().isSignedIn.get()
+              console.log('ok')
+            } catch (e) {
+              $global.status = `Fail: ${JSON.stringify(e)}`
+            }
+          },
+          methods: {
+            authorize() {
+              gapi.auth2.getAuthInstance().signIn()
+            },
+            signout() {
+              gapi.auth2.getAuthInstance().signOut()
+            },
+          },
+        }))
+
+        Vue.component('copy-item', {
+          props: ['value'],
+          template: html`<span>
+            <input
+              readonly
+              class="form-input bg-#090807 border-#454443 focus:border-#656463 text-#bbeeff max-w-full"
+              size="72"
+              v-if="!needsCustomCopy(value)"
+              :value="value"
+            />
+            <button
+              class="border border-#d7fc70 bg-transparent text-#d7fc70 py-2 px-4 rounded"
+              @click="copyTextToClipboard(value)"
+            >
+              Copy
+            </button>
+          </span>`,
+          methods: {
+            needsCustomCopy(text) {
+              const m = text.match(/^clipboard:([^\s,]+),([^]+)$/)
+              return m ? { type: m[1], data: m[2] } : null
+            },
+            copyTextToClipboard(text) {
+              var copyFrom = document.createElement('textarea')
+              copyFrom.textContent = text
+              document.body.appendChild(copyFrom)
+              const m = this.needsCustomCopy(text)
+              if (m) {
+                copyFrom.oncopy = (e) => {
+                  e.clipboardData.clearData()
+                  e.clipboardData.setData(m.type, m.data)
+                  e.preventDefault()
+                }
+              }
+              copyFrom.select()
+              document.execCommand('copy')
+              copyFrom.blur()
+              document.body.removeChild(copyFrom)
+            },
+          },
+        })
+
+        window.vm = main()
+      }
+    </script>
+    <script
+      type="text/javascript"
+      src="https://apis.google.com/js/api.js?onload=gapiAvailable"
+    ></script>
+  </body>
+</html>
