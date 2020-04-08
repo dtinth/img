@@ -8,7 +8,7 @@ This little web application lets you upload a file to Google Drive.
 Once uploaded, the sharing settings will be changed to “Anyone with the link can view,”
 and a direct URL to the file is generated for you, ready for copying.
 
-![A screenshot of the app](https://raw.githubusercontent.com/dtinth/timelapse/master/projects/img_demo.png)
+[![A screenshot of the app](https://raw.githubusercontent.com/dtinth/timelapse/master/projects/img_demo.png)](https://img.spacet.me)
 
 You can choose the output format (just URL, Markdown, or customize it yourself).
 
