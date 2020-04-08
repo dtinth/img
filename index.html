@@ -73,7 +73,7 @@
       <p class="my-4 max-w-xl">
         <button
           class="border border-#656463 bg-transparent text-#8b8685 py-2 px-4 rounded font-bold"
-          v-if="$google.signedIn === null"
+          v-if="$google.signedIn === null && !demoMode"
           disabled
         >
           Please wait…
@@ -81,24 +81,24 @@
         <button
           class="border border-blue-600 bg-blue-600 hover:bg-blue-400 text-white font-bold py-2 px-4 rounded"
           @click="$google.authorize"
-          v-if="$google.signedIn === false"
+          v-else-if="$google.signedIn === false && !demoMode"
         >
           Sign in with Google
         </button>
-        <button
-          class="border border-#d7fc70 bg-#d7fc70 text-#090807 font-bold py-2 px-4 rounded"
-          @click="upload"
-          v-if="$google.signedIn === true"
-        >
-          Upload image
-        </button>
-        <button
-          class="border border-#e9e8e7 bg-transparent text-#e9e8e7 py-2 px-4 rounded"
-          @click="$google.signout"
-          v-if="$google.signedIn === true"
-        >
-          Sign out
-        </button>
+        <template v-else-if="$google.signedIn === true || demoMode">
+          <button
+            class="border border-#d7fc70 bg-#d7fc70 text-#090807 font-bold py-2 px-4 rounded"
+            @click="upload"
+          >
+            Upload image
+          </button>
+          <button
+            class="border border-#e9e8e7 bg-transparent text-#e9e8e7 py-2 px-4 rounded"
+            @click="$google.signout"
+          >
+            Sign out
+          </button>
+        </template>
         <span class="ml-4">{{ $global.status }}</span>
       </p>
 
@@ -211,6 +211,7 @@
                     'Available placeholders: $name for filename, $id for file ID.',
                 },
               },
+              demoMode: !!new URLSearchParams(location.search).get('demo'),
               output: new URLSearchParams(location.search).get('dev')
                 ? [
                     {
